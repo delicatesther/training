@@ -1,0 +1,69 @@
+// here we can import the generated base 64 css file, instead of the real fonts if need be.
+// we must append the name or else we have two files in the same dir with the same name
+
+
+// please comment out when not using base64
+//@import '<%= fontName %>64';
+
+//normal non base64 font call
+@font-face {
+	font-family: "<%= fontName %>";
+	src: url('<%= fontPath %><%= fontName %>.eot');
+	src: url('<%= fontPath %><%= fontName %>.eot?#iefix') format('eot'),
+		url('<%= fontPath %><%= fontName %>.woff') format('woff'),
+		url('<%= fontPath %><%= fontName %>.ttf') format('truetype');
+}
+
+@mixin <%= cssClass%>-styles {
+	font-family: "<%= fontName %>";
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: normal;
+	text-decoration: none;
+	text-transform: none;
+}
+
+%<%= cssClass%> {
+	@include <%= cssClass%>-styles;
+}
+
+@function <%= cssClass%>-char($filename) {
+	$char: "";
+<% _.each(glyphs, function(glyph) { %>
+	@if $filename == <%= glyph.fileName %> {
+		$char: "\<%= glyph.codePoint %>";
+	}<% }); %>
+
+	@return $char;
+}
+
+
+@mixin <%= cssClass%>($filename, $insert: before, $extend: true) {
+	&:#{$insert} {
+		@if $extend {
+			@extend %<%= cssClass%>;
+		} @else {
+			@include <%= cssClass%>-styles;
+		}
+		content: <%= cssClass%>-char($filename);
+	}
+}
+
+// Classes for each font icon
+<% _.each(glyphs, function(glyph) { %>.<%= cssClass%>-<%= glyph.fileName %> {
+	@include <%= cssClass%>(<%= glyph.fileName %>);
+}<% }); %>
+
+// means you can also call it separatly like this:
+
+// .someclass {@include iconfont(basket, after, false);}
+// .someclass:after {
+//  content: "character";
+//  all styles included in stead of extended
+// }
+
+//Variable for each font icon
+<% _.each(glyphs, function(glyph) { %>$icon-<%= glyph.fileName %>: "\<%= glyph.codePoint %>";
+<% }); %>
