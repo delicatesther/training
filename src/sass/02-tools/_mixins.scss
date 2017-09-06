@@ -1,0 +1,45 @@
+//* Clearfix */
+@mixin clearfix() {
+    *zoom: 1;
+
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+
+    &:after {
+        clear: both;
+    }
+}
+
+@mixin maintain-ratio($ratio: 1 1) {
+  $width: 100%;
+  $height: percentage(nth($ratio, 2) / nth($ratio, 1));
+  width: $width;
+  height: 0;
+  padding-bottom: $height;
+}
+
+/*==============================================================================
+Breakpoints
+==============================================================================*/
+$breakpoints: (
+	xs: 360px,
+	s: 600px,
+  m: 767px,
+  l: 1001px,
+  xl: 1025px,
+  xxl: 1440px
+);
+
+@mixin mq($name) {
+  @if not map-has-key($breakpoints, $name) {
+	@warn "Warning: `#{$name}` is not a valid breakpoint name.";
+  }
+  @else {
+	@media screen and (max-width: map-get($breakpoints, $name)) {
+	  @content;
+	 }
+  }
+}

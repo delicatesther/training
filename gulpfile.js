@@ -1,9 +1,9 @@
 var
    gulp           = require('gulp'),
    sass           = require('gulp-sass'),
-   autoprefixer   = require('gulp-autoprefixer'),
-   mmq            = require('gulp-merge-media-queries'),
-   pkg            = require('./package.json'),
+   autoprefixer   = require('autoprefixer'),
+   mqpacker				= require('css-mqpacker'),
+   pkg 						= require('./package.json'),
    paths          = pkg.paths,
    cssfont64      = require('gulp-cssfont64'),      //iconfont base 64
    iconfontCss    = require('gulp-iconfont-css'),   //iconfont css
@@ -11,23 +11,22 @@ var
    spritePng      = require("gulp.spritesmith"),    //sprite png
    imagemin       = require("gulp-imagemin"),       //sprite png
    merge          = require('merge-stream'),
+   sourcemaps 		= require('gulp-sourcemaps'),
    spriteSvg      = require('gulp-svg-sprite'),     //sprite svg
    runSequence    = require('run-sequence'),        // needed for task execution loop at end of file
 	 browserSync 		= require('browser-sync').create();
-   //uglify         = require('gulp-uglify')
 
 
 // Build CSS
-gulp.task('style', function() {
-   return gulp.src(paths.sass.src + '*.scss')
-   .pipe(sass({
-      sourceComments: true,                  // comment out for final delivery
-      sourceMap: '/' + paths.sass.src,       // comment out for final delivery
-      outputStyle: 'expanded'                //"compressed" for final delivery
-    }))
-   .pipe(autoprefixer())
-   .pipe(mmq())
-   .pipe(gulp.dest(paths.sass.dest));
+gulp.task('css', function() {
+  return gulp.src(paths.sass.src + 'style.scss')
+  .pipe(sourcemaps.init())
+  .pipe(sass({
+    sourceComments: true,                  // comment out for final delivery
+    outputStyle: 'expanded'                //"compressed" for final delivery
+  }).on('error', sass.logError))
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest(paths.sass.dest));
 });
 
 //icon fonts
@@ -138,18 +137,7 @@ gulp.task('spriteSvg', function () {
 });
 
 
-// make sure tasks run in a sequence
-// possibilities so far:
-// runSequence('spritePng','iconfont','spriteSvg','base64','style', callback);
-
-gulp.task('build', function(callback) {
-  runSequence('spritePng','iconfont','spriteSvg','style', callback);
-});
-// gulp.task('default',function() {
-//   gulp.watch(paths.sass.src + '**/*.scss',['build']);
-// });
-
-
+// run a local server that refreshes automatically on update
 gulp.task('browserSync', function() {
   browserSync.init({
     server: {
@@ -159,10 +147,29 @@ gulp.task('browserSync', function() {
   })
 })
 
+// make sure tasks run in a sequence
+// possibilities so far:
+// runSequence('spritePng','iconfont','spriteSvg','base64','css', callback);
+
+gulp.task('build', function(callback) {
+  runSequence('spritePng','iconfont','spriteSvg','css', callback);
+});
+// gulp.task('default',function() {
+//   gulp.watch(paths.sass.src + '**/*.scss',['build']);
+// });
+
+
+
+
 //watch
-gulp.task('default', ['browserSync', 'css'], function() {
+gulp.task('default', ['build'], function() {
+  gulp.src(paths.css.src  + "**/*.**")
+  .pipe(gulp.dest(paths.css.dest));
+  gulp.src(paths.js.src  + "**/*.**")
+  .pipe(gulp.dest(paths.js.dest));
+
 	//watch .scss files
-	gulp.watch(paths.sass.src + "**/*.**", ['css']);
-	gulp.watch('src/**/*.html');
-	gulp.watch(paths.js.src + "**/*.**");
+	gulp.watch(paths.sass.src + "**/*.**", ['build']);
+	gulp.watch('src/index.html');
+	// gulp.watch(paths.js.src + "**/*.**");
 });

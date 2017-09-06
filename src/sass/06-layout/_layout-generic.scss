@@ -1,0 +1,29 @@
+body {
+  background: $gray--dark-1;
+  color: $white;
+  font-family: $base-font--1;
+  font-size: 12px;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+header {
+  border-bottom: 1px solid rgba($white, 0.5);
+  padding: 20px;
+
+}
+main {
+  padding: 20px;
+  display: flex;
+  flex: 1;
+}
+footer {
+  background: $gray--dark-2;
+  height: 70px;
+  padding: 10px;
+  .smurf {
+    @include sprite-svg(smurf);
+    transform: scale(.75);
+    float: right;
+  }
+}
